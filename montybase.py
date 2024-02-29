@@ -46,28 +46,28 @@ class Reference:
         self.ref += args
         return self
     
-    def fetch(self, endpoint, value: str | int | float | bool | list | dict = None, uid: str = None):
+    def fetch(self, endpoint, value: str | int | float | bool | list | dict = None, key: str = None):
         url = self.api_endpoint + "/" + endpoint
         headers = {'Content-Type': 'application/json'} | self.db.headers  # Set the correct content type
 
         data = {"ref": self.ref}
         if value: data["value"] = value
-        if uid: data["id"] = uid 
+        if key: data["id"] = key 
 
         response = requests.post(url, data=encrypt(self.db.headers["key"], data), headers=headers)
 
         if response.status_code != 200: raise requests.HTTPError(decrypt(self.db.headers["key"], response.content.decode()))
         else: return decrypt(self.db.headers["key"], response.content.decode())
     
-    def set(self, value, uid: str | None = None):
-        if uid: return self.fetch("set_doc", value, uid=uid)
+    def set(self, value, key: str | None = None):
+        if key: return self.fetch("set_doc", value, key=key)
         return self.fetch("set_doc", value)
     
-    def add(self, value):
-        return self.fetch("add_doc", value)
+    def add(self, value, key: str | None = None):
+        return self.fetch("add_doc", value, key=key)
     
-    def update(self, value):
-        return self.fetch("update_doc", value)
+    def update(self, value, key: str | None = None):
+        return self.fetch("update_doc", value, key=key)
     
     def stream(self) -> list[dict]:
         docs: dict = self.fetch("get_doc")
@@ -108,6 +108,9 @@ class FilteredReference:
     
     def get(self):
         return self.fetch("get_doc", self.condition) 
+    
+    def exists(self) -> bool:
+        return bool(self.fetch("get_doc", self.condition))
 
 def doc(db: Montybase, *args):
     return Reference(db, *args)

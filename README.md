@@ -51,22 +51,21 @@ Montybase works as a giant dictionary. At the moment there are only a few, yet p
 
 Example:
 ```Python
-db = Montybase()
-ref = doc(db, "scores")
+def signup(db, email, password):
+    ref = doc(db, "users")
+    if ref.append(email).exists():
+        raise ValueError("User already exists!")
+    
+    return ref.set({"password": password}, key=email)
 
-uid = ref.set({"name": "Alan", "score": 100})
-uid = ref.add({"name": "Toriel", "score": 120})
-uid = ref.add({"name": "Isaac", "score": 130})
+def login(db, email, password):
+    ref = doc(db, "users", email)
+    if ref.exists():
+        if ref.where("password", "==", password).exists():
+            return ref.get()
 
-docs = ref.where("score", ">", 100).stream()
-for collection in docs:
-    print(f"{collection["id"]} => {collection["value"]}")
-```
-
-Output:
-```shell
-7d857f9c-ab1a-4906-a7ce-be1e62486b75 => {'name': 'Toriel', 'score': 120}
-4e73a1a0-1fd1-4e57-bff2-65209cccf6be => {'name': 'Isaac', 'score': 130}
+        raise ValueError("Password is incorect!")
+    raise ValueError("User doesn't exist!")
 ```
 
 ### Initialise DB
