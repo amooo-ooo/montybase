@@ -135,7 +135,11 @@ class MontybaseAPI:
 
         if "id" in data: uid = data["id"]
         else: uid = str(uuid.uuid4())
-        current_dict[reference[-1]][uid] = value
+
+        try:
+            current_dict[reference[-1]][uid] = value
+        except KeyError:
+            current_dict[reference[-1]] = {uid: value}
 
         # save on long-term db
         self.storageUpdateCount += 1

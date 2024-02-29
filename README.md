@@ -56,7 +56,7 @@ def signup(db, email, password):
     if ref.append(email).exists():
         raise ValueError("User already exists!")
     
-    return ref.set({"password": password}, key=email)
+    return ref.add({"password": password}, key=email)
 
 def login(db, email, password):
     ref = doc(db, "users", email)
