@@ -44,7 +44,7 @@ class Montybase:
 
 
 class MontybaseAPI:
-    def __init__(self, name: str = Path(__file__).name[:3], db_path: str = "db.json", updateTime: int = 180, storeMin: int = 10):
+    def __init__(self, name: str = Path(__file__).name[:3], db_path: str = "db.json", updateTime: int = 300, storeMin: int = 1):
         self.app = Flask(__name__)
 
         db_config = Path(Path(__file__).parent, "db-config.json")

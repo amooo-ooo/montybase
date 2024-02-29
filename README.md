@@ -13,6 +13,16 @@ Montybase is in beta, however if demand arises, more features, better documentat
 ## Setup
 Set up the program by downloading the files on this repo. 
 
+```shell
+git clone https://github.com/amooo-ooo/montybase
+```
+
+To install required dependencies, simply run the following on terminal:
+
+```shell
+pip install -r requirements.txt
+```
+
 ### API (back-end)
 Store `api.py` locally and run the following to host the server:
 
@@ -22,6 +32,8 @@ from api import MontybaseAPI
 mb = MontybaseAPI()
 mb.run()
 ```
+
+It will automatically initialise its working environment and create config files, as well as the raw json database format. This will also generate a config-file for the client side application (`client-config.json`). This file must be stored locally on all client side apps since it stores information such as the database's API and encryption key. Otherwise, access to the database will be denied.
 
 ### Client (Front-end)
 Store `montybase.py` locally and run the following:
@@ -33,23 +45,11 @@ db = Montybase()
 ...
 ```
 
-OR, only import the tools you need!
 
-```Python
-from montybase import (Montybase, get, doc)
+## Documentation (Client-side)
+Montybase simply works as a giant JSON tree. At the moment there are only a few operations available. However, these operations are powerful enough to cover a substantial number of use cases. 
 
-db = Montybase()
-...
-````
-
-
-
-
-
-## Documentation
-Montybase works as a giant dictionary. At the moment there are only a few, yet powerful operations available.
-
-Example:
+Authentication Example:
 ```Python
 def signup(db, email, password):
     ref = doc(db, "users")
@@ -210,6 +210,23 @@ Output:
 ```shell
 True
 ```
+
+## Documentation (Server-side)
+
+### Config File
+
+```json
+{
+    "projectName": "api", // Name of the app
+    "apiKey":"api-...", // Also the symmetric encryption key
+    "storageBucket": "path/to/database", // Path to the raw JSON file
+    "storageMinCount": 1, // Run the long-term saving function after N changes.
+    "storageUpdate": 300 // Update the raw JSON data file after N seconds, AFTER exceeding "storageMinCount" changes.
+}
+```
+
+Database saves information in the long-term by waiting until the `storageMinCount` is exceeded and resetted. This then creates a timer of `storageUpdate` seconds, where the DB is predicted to be active. Once the timer runs out it saves the currect active DB into the raw JSON file for long-term storage.
+
 
 ## Free Hosting
 If you are interested in hosting the database online for free, I recommend using pythonanywhere.com. It is an online service which lets you hosts python based back-end applications. Simply setup the serverside system on the pythonanyhere server and change the api endpoint of client programs to the server's url.
