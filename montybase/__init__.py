@@ -54,11 +54,13 @@ class Montybase:
                  endpoint=False,
                  hot=False,
                  id_length=20,
-                 dev=False):
+                 dev=False,
+                 api = None):
         
         db_path = db_path if db_path else Path(os.getcwd(), f"{name}-db")
-        self.endpoint = endpoint is True
+        self.endpoint = endpoint
         self.dev = dev
+        self.api = api
         
         if dev is True:
             self.endpoint = "127.0.0.1:5000" 
@@ -84,6 +86,8 @@ class Montybase:
             self.setup_db(name, db_path, updateTime, storeMin)
             
         if endpoint:
+            self.setup_client()
+            
             self.app = Flask(__file__)
             client_config = Path(db_path, "client.config.json")
             if not client_config.is_file():
@@ -93,7 +97,7 @@ class Montybase:
             self.setup_routes()
             
         if self.api:
-            with open(Path(db_path, "client-config.json"), "r") as f:
+            with open(Path(db_path, "client.config.json"), "r") as f:
                 self.headers = json.loads(f.read())
                 self.headers["key"] = self.headers["apiKey"][len(self.headers["projectName"])+1:]
             
@@ -126,8 +130,6 @@ class Montybase:
         
         with open(self.setup["storageBucket"], "w") as f:
             f.write("{}")
-
-        self.setup_client()
 
     def setup_client(self):
 
