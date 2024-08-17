@@ -61,11 +61,11 @@ class Montybase:
         self.dev = dev
         
         if dev is True:
-            self.api = "127.0.0.1:5000" 
+            self.endpoint = "127.0.0.1:5000" 
         elif dev:
-            self.api = dev
+            self.endpoint = dev
         elif endpoint:
-            self.api = "0.0.0.0:5000"
+            self.endpoint = "0.0.0.0:5000"
             
         self.name = name
         self.db_path = db_path

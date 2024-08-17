@@ -1,6 +1,10 @@
 # montybase (beta)
 Python-based, NoSQL, in-memory, persistent, document database inspired by Firebase Firestore and Pocketbase. Montybase is best suited for small to medium scale Python projects that needs a versatile storage system (e.g. Highscores, Leaderboards, Posts, Accounts, etc). 
 
+```shell
+pip install montybase
+```
+
 Montybase is in beta, however if demand arises, more features, better documentation and updates will be added. 
 Montybase supports chaining (like in JavaScript!).
 
@@ -12,11 +16,6 @@ With Montybase, you can natively use a complex NoSQL data structure in your prog
 + API Key Authentication
 + Query Filters
 + Storage Bucket Settings
-
-## Setup
-```shell
-pip install montybase
-```
 
 ## Documentation
 Montybase works as a giant JSON tree. At the moment there are only a few operations available. However, these operations are powerful enough to cover a substantial number of use cases. 
@@ -40,7 +39,7 @@ def login(db, email, password):
     raise ValueError("User doesn't exist!")
 ```
 
-### Database Setup (Flask Server Endpoint)
+## Server Endpoint Setup
 #### Development Mode (hosts on 127.0.0.1:5000)
 ```Python
 from montybase import *
@@ -66,9 +65,17 @@ mb.run()
 
 This will automatically create config files and the persistent db. This will also generate a config-file for the client side application (`client-config.json`). This file must be stored locally on all client side apps since it stores information such as the database's API and encryption key. Otherwise, access to the database will be denied.
 
+### Client-Side Connect to Database Server Endpoint
+```Python
+from montybase import *
+
+mb = Montybase(api="https://example.com/")
+mb.run()
+```
+
 <hr>
 
-### Local
+## Local Setup
 If you don't want to run Montybase as an endpoint simply:
 
 ```Python
