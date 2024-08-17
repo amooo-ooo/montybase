@@ -1,8 +1,8 @@
 # montybase (beta)
-Simple, Python-based, NoSQL database inspired by Firebase Firestore and Pocketbase. Montybase is a small database written in Python. It simply works as a giant dictionary tree! Montybase is best suited for small to medium scale Python projects which may require an online storage system (e.g. Highscores, Leaderboards, Posts, Accounts, etc). 
+Simple, Python-based, NoSQL, in-memory, document database inspired by Firebase Firestore and Pocketbase. Montybase is a small database written in Python. It simply works as a giant dictionary! Montybase is best suited for small to medium scale Python projects which may require an online storage system (e.g. Highscores, Leaderboards, Posts, Accounts, etc). 
 
 Montybase is in beta, however if demand arises, more features, better documentation and updates will be added. 
-
+Montybase supports chaining (like in JavaScript).
 
 ## Features
 + Symmetric Encryption 

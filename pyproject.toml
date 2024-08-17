@@ -1,0 +1,23 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "montybase"
+version = "0.0.2"
+description = "Simple, Python-based, NoSQL, document, database inspired by Firebase Firestore."
+authors = ["Amor Budiyanto <amor.budiyanto@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/amooo-ooo/montybase"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+nanoid = "^2.0.0"
+flask = "^2.0.0"
+flask_cors = "^3.0.0"
+cryptography = "^3.0.0"
+requests = "^2.0.0"
+
+[tool.poetry.extras]
+dev = ["pytest"]
