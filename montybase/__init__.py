@@ -160,6 +160,18 @@ class Montybase:
             return False, {"data": "Access denied. Missing API Key."}, 400
         return True, None, 200
     
+    def exists(self, data):
+        if self.endpoint:
+            access, response, status = self.auth_request()
+            if not access:
+                return jsonify(response), status
+            data = decrypt(self.encryption_key, request.get_data())
+            
+        current_dict = self.db.data
+        if (ref := data.get("ref", None)):
+            response = {"data": all((current_dict := current_dict.get(key)) for key in ref)}
+        return encrypt(self.encryption_key, json.dumps(response)) if self.endpoint else response["data"]
+    
 
     def add_doc(self, data=None):
         if self.endpoint:
@@ -337,7 +349,7 @@ class Reference:
         return self.fetch("get_doc")
     
     def exists(self) -> bool:
-        return bool(self.fetch("get_doc"))
+        return self.fetch("exists")
 
 
 class FilteredReference():
