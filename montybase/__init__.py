@@ -53,11 +53,20 @@ class Montybase:
                  storeMin: int = 1,
                  endpoint=False,
                  hot=False,
-                 id_length=20):
+                 id_length=20,
+                 dev=False):
         
         db_path = db_path if db_path else Path(os.getcwd(), f"{name}-db")
         self.endpoint = endpoint is True
-        self.api = endpoint if endpoint and not type(endpoint, bool) else None
+        self.dev = dev
+        
+        if dev is True:
+            self.api = "127.0.0.1:5000" 
+        elif dev:
+            self.api = dev
+        elif endpoint:
+            self.api = "0.0.0.0:5000"
+            
         self.name = name
         self.db_path = db_path
         self.hot = hot
@@ -157,13 +166,12 @@ class Montybase:
                 return jsonify(response), status
             data = decrypt(self.encryption_key, request.get_data())
 
-        reference, value = data["ref"], data["value"]
+        reference, value, uid = data["ref"], data.get("value", None), data.get("id", generate(size=self.id_length))
         current_dict = self.db.data
 
         for key in reference[:-1]:
             current_dict = current_dict.setdefault(key, {})
-
-        uid = data.get("id", str(generate(size=self.id_length)))        
+   
         current_dict.setdefault(reference[-1], {})[uid] = value
 
         # save on long-term db
@@ -181,13 +189,12 @@ class Montybase:
                 return jsonify(response), status
             data = decrypt(self.encryption_key, request.get_data())
 
-        reference, value = data["ref"], data["value"]
+        reference, value, uid = data["ref"], data.get("value", None), data.get("id", generate(size=self.id_length))
         current_dict = self.db.data
 
         for key in reference[:-1]:
             current_dict = current_dict.setdefault(key, {})
-
-        uid = data.get("id", generate(size=self.id_length))
+            
         current_dict[reference[-1]] = {uid: value}
 
         # save on long-term db
@@ -218,6 +225,23 @@ class Montybase:
             threading.Thread(target=self.startSaveTimer).start()
 
         return encrypt(self.encryption_key, json.dumps({"data": True})) if self.endpoint else True
+    
+    def delete_doc(self, data=None):
+        if self.endpoint:
+            access, response, status = self.auth_request()
+            if not access:
+                return jsonify(response), status
+            data = decrypt(self.encryption_key, request.get_data())
+        
+        if (ref := data["ref"] + data.get("value", tuple())):
+            current_dict = self.db.data
+            for key in ref[:-1]:
+                current_dict = current_dict.get(key, {})
+            response = {"data": current_dict.pop(ref[-1], None)}
+        else:
+            response = {"data": {}}
+            
+        return encrypt(self.encryption_key, json.dumps(response)) if self.endpoint else response["data"]
 
     def get_doc(self, data=None):
         if self.endpoint:
@@ -225,9 +249,9 @@ class Montybase:
             if not access:
                 return jsonify(response), status
             data = decrypt(self.encryption_key, request.get_data())
-
+        
         if not (reference := data["ref"]):
-            return self.db.data
+            return encrypt(self.encryption_key, json.dumps({"data": self.db.data})) if self.endpoint else self.db.data
         current_dict = self.db.data
 
         try:
@@ -253,7 +277,8 @@ class Montybase:
         return encrypt(self.encryption_key, json.dumps(response)) if self.endpoint else response["data"]
 
     def run(self):
-        self.app.run(debug=True)
+        ip, port = self.endpoint.split(':')
+        self.app.run(debug=self.dev, host=ip, port=port)
 
 
 class Reference:
@@ -278,7 +303,7 @@ class Reference:
         return self
     
     def fetch(self, endpoint, value: str | int | float | bool | list | dict = None, key: str = None):
-        data = {"ref": self.ref} | ({ "value": value } if value else {}) | ({ "id": key } if key else {})
+        data = {"ref": self.ref} | ({} if value is None else { "value": value }) | ({ "id": key } if key else {})
         if self.api_endpoint:
             url = self.api_endpoint + "/" + endpoint
             headers = {'Content-Type': 'application/json'} | self.db.headers  # Set the correct content type
@@ -289,15 +314,18 @@ class Reference:
             else: return decrypt(self.db.headers["key"], response.content.decode())
         return getattr(self.db, endpoint)(data)
                 
-    def set(self, value, key: str | None = None):
+    def set(self, value=None, key: str | None = None):
         if key: return self.fetch("set_doc", value, key=key)
         return self.fetch("set_doc", value)
     
-    def add(self, value, key: str | None = None):
+    def add(self, value=None, key: str | None = None):
         return self.fetch("add_doc", value, key=key)
     
     def update(self, value, key: str | None = None):
         return self.fetch("update_doc", value, key=key)
+    
+    def delete(self, value=None, key: str | None = None):
+        return self.fetch("delete_doc", value, key=key)
     
     def stream(self) -> list[dict]:
         docs: dict = self.fetch("get_doc")
