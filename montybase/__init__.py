@@ -313,8 +313,7 @@ class Reference:
         return self
     
     def append(self, *args):
-        self.ref += args
-        return self
+        return Reference(self.db, *self.ref, *args)
     
     def fetch(self, endpoint, value: str | int | float | bool | list | dict = None, key: str = None):
         data = {"ref": self.ref} | ({} if value is None else { "value": value }) | ({ "id": key } if key else {})
