@@ -342,7 +342,7 @@ class Reference:
     
     def stream(self) -> list[dict]:
         docs: dict = self.fetch("get_doc")
-        return [{"id": key, "value":value} for key, value in docs.items()]
+        return [(key, value) for key, value in docs.items()]
     
     def get(self) -> dict:
         return self.fetch("get_doc")
@@ -351,8 +351,10 @@ class Reference:
         return self.fetch("exists")
 
 
-class FilteredReference():
+class FilteredReference(Reference):
     def __init__(self, doc: Reference, condition: tuple):
+        super().__init__()
+        
         self.db = doc.db
         self.ref = doc.ref
         self.api_endpoint = doc.api_endpoint
@@ -364,6 +366,7 @@ class FilteredReference():
     
     def fetch(self, endpoint, value = None):
         data = {"ref": self.ref, "value": value}
+        
         if self.api_endpoint:
             url = self.api_endpoint + "/" + endpoint
             headers = {'Content-Type': 'application/json'} | self.db.headers # Set the correct content type
@@ -371,20 +374,28 @@ class FilteredReference():
             response = requests.post(url, data=encrypt(self.db.headers["key"], data), headers=headers)
             
             if response.status_code != 200: raise requests.HTTPError(decrypt(self.db.headers["key"], response.content.decode()))
-            else: return decrypt(self.db.headers["key"], response.content.decode())
+            else: docs = decrypt(self.db.headers["key"], response.content.decode())
     
-        return getattr(self.db, endpoint)(data)
+        docs = getattr(self.db, endpoint)(data)
+        
+        if type(docs, dict):
+            key, operation, val = self.condition
+            docs = [(doc, docs[doc]) 
+                    for doc in tuple(docs) 
+                    if dynamic_if(docs[doc].get(key, None), operation, val)]
+        
+        return docs   
 
 
     def stream(self) -> list[dict]:
-        docs: dict = self.fetch("get_doc", self.condition)
-        return [{"id": key, "value":value} for key, value in docs.items()]
+        docs: dict = self.fetch("get_doc")
+        return [(key, value) for key, value in docs.items()]
     
     def get(self):
-        return self.fetch("get_doc", self.condition) 
+        return self.fetch("get_doc") 
     
     def exists(self) -> bool:
-        return bool(self.fetch("get_doc", self.condition))
+        return bool(self.fetch("get_doc"))
 
 def doc(db: Montybase, *args):
     return Reference(db, *args)

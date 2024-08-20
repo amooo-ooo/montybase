@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "montybase"
-version = "0.1.5"
+version = "0.1.6"
 description = "Simple, Python-based, NoSQL, document, database inspired by Firebase Firestore."
 authors = ["Amor Budiyanto <amor.budiyanto@gmail.com>"]
 license = "MIT"
